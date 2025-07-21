@@ -8,4 +8,5 @@ pnpm-debug
 stats.html
 .idea
 .env
-venv
+backend/venv/
+
