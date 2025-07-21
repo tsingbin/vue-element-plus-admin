@@ -10,3 +10,14 @@ stats.html
 .env
 backend/venv/
 
+# Python
+*.pyc
+__pycache__/
+
+# Virtual environment
+venv/
+backend/venv/
+
+# IDE / editor
+.vscode/
+.idea/
