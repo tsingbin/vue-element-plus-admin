@@ -13,10 +13,10 @@ export default [
       return {
         code: SUCCESS_CODE,
         data: {
-          users: 102400,
-          messages: 81212,
-          moneys: 9280,
-          shoppings: 13600
+          users: 11,
+          messages: 22,
+          moneys: 33,
+          shoppings: 44
         }
       }
     }
