@@ -1,18 +1,20 @@
-from flask import Blueprint, request, jsonify
-import random
-from datetime import datetime, timedelta
-import string
+from flask import Blueprint, jsonify
 
 analysis_bp = Blueprint('analysis', __name__)
 
-# Mock data structure
-dates = [(datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(7)]
-visits = [random.randint(100, 1000) for _ in range(7)]
-messages = [random.randint(10, 100) for _ in range(7)]
-purchases = [random.randint(5, 50) for _ in range(7)]
-shoppings = [random.randint(20, 200) for _ in range(7)]
-
 SUCCESS_CODE = 200
+
+@analysis_bp.route('/total', methods=['GET'])
+def get_total_data():
+    return jsonify({
+        'code': SUCCESS_CODE,
+        'data': {
+          'users': 11,
+          'messages': 22,
+          'moneys': 33,
+          'shoppings': 44
+        }
+    })
 
 @analysis_bp.route('/userAccessSource', methods=['GET'])
 def get_uas_data():
@@ -60,68 +62,4 @@ def get_ms_data():
           { 'estimate': 118, 'actual': 99, 'name': 'analysis.november' },
           { 'estimate': 123, 'actual': 123, 'name': 'analysis.december' }
         ]
-    })
-
-@analysis_bp.route('/visit', methods=['GET'])
-def get_visit_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-            'dates': dates,
-            'visits': visits
-        }
-    })
-
-@analysis_bp.route('/message', methods=['GET'])
-def get_message_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-            'dates': dates,
-            'messages': messages
-        }
-    })
-
-@analysis_bp.route('/purchase', methods=['GET'])
-def get_purchase_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-            'dates': dates,
-            'purchases': purchases
-        }
-    })
-
-@analysis_bp.route('/shopping', methods=['GET'])
-def get_shopping_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-            'dates': dates,
-            'shoppings': shoppings
-        }
-    })
-
-@analysis_bp.route('/panel', methods=['GET'])
-def get_panel_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-            'visits': sum(visits),
-            'messages': sum(messages),
-            'purchases': sum(purchases),
-            'shoppings': sum(shoppings)
-        }
-    })
-
-@analysis_bp.route('/total', methods=['GET'])
-def get_total_data():
-    return jsonify({
-        'code': SUCCESS_CODE,
-        'data': {
-          'users': 11,
-          'messages': 22,
-          'moneys': 33,
-          'shoppings': 44
-        }
     })
