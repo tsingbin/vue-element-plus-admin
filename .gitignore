@@ -6,6 +6,7 @@ dist-ssr
 /dist*
 pnpm-debug
 stats.html
+start_script
 
 # Python
 *.pyc
