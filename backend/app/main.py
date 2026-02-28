@@ -24,16 +24,16 @@ app.add_middleware(
 )
 
 # 注册路由
-app.include_router(user.router, prefix="/mock")
-app.include_router(menu.router, prefix="/mock")
-app.include_router(role.router, prefix="/mock")
-app.include_router(dict.router, prefix="/mock")
-app.include_router(department.router, prefix="/mock")
-app.include_router(table.router, prefix="/mock")
-app.include_router(table.card_router, prefix="/mock")
-app.include_router(request.router, prefix="/mock")
-app.include_router(analysis.router, prefix="/mock")
-app.include_router(workplace.router, prefix="/mock")
+app.include_router(user.router, prefix="/api")
+app.include_router(menu.router, prefix="/api")
+app.include_router(role.router, prefix="/api")
+app.include_router(dict.router, prefix="/api")
+app.include_router(department.router, prefix="/api")
+app.include_router(table.router, prefix="/api")
+app.include_router(table.card_router, prefix="/api")
+app.include_router(request.router, prefix="/api")
+app.include_router(analysis.router, prefix="/api")
+app.include_router(workplace.router, prefix="/api")
 
 
 @app.get("/")

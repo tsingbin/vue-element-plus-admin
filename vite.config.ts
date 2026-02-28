@@ -146,15 +146,15 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
         // FastAPI 后端代理
         '/api': {
           target: 'http://127.0.0.1:8000',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, '/mock')
+          changeOrigin: true
         }
       },
       hmr: {
         overlay: false
       },
       host: '0.0.0.0'
-    },    optimizeDeps: {
+    },
+    optimizeDeps: {
       include: [
         'vue',
         'vue-router',

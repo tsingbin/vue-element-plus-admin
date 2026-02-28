@@ -15,10 +15,10 @@ async def get_total():
     return BaseResponse(
         code=SUCCESS_CODE,
         data={
-            "users": 102400,
-            "messages": 81212,
-            "moneys": 9280,
-            "shoppings": 13600
+            "users": 1,
+            "messages": 2,
+            "moneys": 3,
+            "shoppings": 4
         }
     )
 
@@ -29,11 +29,11 @@ async def get_user_access_source():
     return BaseResponse(
         code=SUCCESS_CODE,
         data=[
-            {"value": 1000, "name": "analysis.directAccess"},
-            {"value": 310, "name": "analysis.mailMarketing"},
-            {"value": 234, "name": "analysis.allianceAdvertising"},
-            {"value": 135, "name": "analysis.videoAdvertising"},
-            {"value": 1548, "name": "analysis.searchEngines"}
+            {"value": 1, "name": "analysis.directAccess"},
+            {"value": 2, "name": "analysis.mailMarketing"},
+            {"value": 3, "name": "analysis.allianceAdvertising"},
+            {"value": 4, "name": "analysis.videoAdvertising"},
+            {"value": 5, "name": "analysis.searchEngines"}
         ]
     )
 
@@ -44,13 +44,13 @@ async def get_weekly_user_activity():
     return BaseResponse(
         code=SUCCESS_CODE,
         data=[
-            {"value": 13253, "name": "analysis.monday"},
-            {"value": 34235, "name": "analysis.tuesday"},
-            {"value": 26321, "name": "analysis.wednesday"},
-            {"value": 12340, "name": "analysis.thursday"},
-            {"value": 24643, "name": "analysis.friday"},
-            {"value": 1322, "name": "analysis.saturday"},
-            {"value": 1324, "name": "analysis.sunday"}
+            {"value": 1, "name": "analysis.monday"},
+            {"value": 2, "name": "analysis.tuesday"},
+            {"value": 3, "name": "analysis.wednesday"},
+            {"value": 4, "name": "analysis.thursday"},
+            {"value": 5, "name": "analysis.friday"},
+            {"value": 6, "name": "analysis.saturday"},
+            {"value": 7, "name": "analysis.sunday"}
         ]
     )
 
