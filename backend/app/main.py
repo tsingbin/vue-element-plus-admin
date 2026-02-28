@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import user, menu, role, dict, department, table, request, analysis, workplace
+from app.db.database import init_db
 
 # 创建 FastAPI 应用
 app = FastAPI(
@@ -34,6 +35,12 @@ app.include_router(table.card_router, prefix="/api")
 app.include_router(request.router, prefix="/api")
 app.include_router(analysis.router, prefix="/api")
 app.include_router(workplace.router, prefix="/api")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """应用启动时初始化数据库"""
+    init_db()
 
 
 @app.get("/")

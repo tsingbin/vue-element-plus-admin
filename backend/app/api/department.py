@@ -4,8 +4,11 @@ Department API - 部门列表、用户、保存、删除
 import uuid
 import random
 from typing import List, Optional
-from fastapi import APIRouter, Query
-from app.models.schemas import BaseResponse, DeleteRequest, SaveUserRequest, SaveDepartmentRequest
+from fastapi import APIRouter, Query, Depends
+from sqlalchemy.orm import Session
+from app.db.database import get_db
+from app.db.models import DepartmentModel, DepartmentUserModel
+from app.models.schemas import BaseResponse, DeleteRequest
 
 router = APIRouter(prefix="/department", tags=["department"])
 
@@ -17,126 +20,106 @@ def to_any_string():
     return str(uuid.uuid4())
 
 
-# 部门列表数据
-CITIES = ['厦门总公司', '北京分公司', '上海分公司', '福州分公司', '深圳分公司', '杭州分公司']
-
-# 存储部门数据
-DEPARTMENT_LIST = []
-
-for i in range(5):
-    DEPARTMENT_LIST.append({
-        "departmentName": CITIES[i],
-        "id": to_any_string(),
-        "createTime": "2024-01-01 12:00:00",
-        "status": random.randint(0, 1),
-        "remark": "这是一个备注信息",
-        "children": [
-            {
-                "departmentName": "研发部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
-            },
-            {
-                "departmentName": "产品部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
-            },
-            {
-                "departmentName": "运营部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
-            },
-            {
-                "departmentName": "市场部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
-            },
-            {
-                "departmentName": "销售部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
-            },
-            {
-                "departmentName": "客服部",
-                "id": to_any_string(),
-                "createTime": "2024-01-01 12:00:00",
-                "status": random.randint(0, 1),
-                "remark": "这是一个备注信息"
+def build_department_tree(departments: List[DepartmentModel], parent_id: Optional[str] = None) -> List[dict]:
+    """构建部门树形结构"""
+    result = []
+    for dept in departments:
+        if dept.parent_id == parent_id:
+            dept_dict = {
+                "departmentName": dept.department_name,
+                "id": dept.id,
+                "createTime": dept.create_time.strftime("%Y-%m-%d %H:%M:%S") if dept.create_time else None,
+                "status": dept.status,
+                "remark": dept.remark
             }
-        ]
-    })
-
-
-# 模拟用户名列表
-FIRST_NAMES = ['张', '李', '王', '刘', '陈', '杨', '赵', '黄', '周', '吴']
-LAST_NAMES = ['伟', '芳', '娜', '敏', '静', '丽', '强', '磊', '军', '洋', '勇', '艳', '杰', '涛', '明', '超', '秀英', '华', '平', '刚']
-
-
-def generate_mock_users(page_size: int):
-    """生成模拟用户数据"""
-    mock_list = []
-    for i in range(page_size):
-        mock_list.append({
-            "username": random.choice(FIRST_NAMES) + random.choice(LAST_NAMES),
-            "account": f"user_{random.randint(100, 999)}",
-            "email": f"user{random.randint(100, 999)}@example.com",
-            "createTime": "2024-01-01 12:00:00",
-            "id": to_any_string()
-        })
-    return mock_list
+            # 递归获取子部门
+            children = build_department_tree(departments, dept.id)
+            if children:
+                dept_dict["children"] = children
+            result.append(dept_dict)
+    return result
 
 
 @router.get("/list", response_model=BaseResponse)
-async def get_department_list():
+async def get_department_list(db: Session = Depends(get_db)):
     """获取部门列表"""
+    departments = db.query(DepartmentModel).all()
+    dept_tree = build_department_tree(departments)
+    
     return BaseResponse(
         code=SUCCESS_CODE,
         data={
-            "list": DEPARTMENT_LIST
+            "list": dept_tree
         }
     )
 
 
 @router.get("/table/list", response_model=BaseResponse)
-async def get_department_table_list():
+async def get_department_table_list(db: Session = Depends(get_db)):
     """获取部门表格列表"""
+    departments = db.query(DepartmentModel).filter(DepartmentModel.parent_id == None).all()
+    dept_tree = build_department_tree(departments)
+    
     return BaseResponse(
         code=SUCCESS_CODE,
         data={
-            "list": DEPARTMENT_LIST,
-            "total": len(DEPARTMENT_LIST)
+            "list": dept_tree,
+            "total": len(departments)
         }
     )
 
 
 @router.get("/users", response_model=BaseResponse)
 async def get_users_by_department(
-    pageSize: int = Query(10, alias="pageSize")
+    pageSize: int = Query(10),
+    db: Session = Depends(get_db)
 ):
     """根据部门获取用户列表"""
-    mock_list = generate_mock_users(pageSize)
+    users = db.query(DepartmentUserModel).limit(pageSize).all()
+    
+    user_list = []
+    for user in users:
+        user_list.append({
+            "username": user.username,
+            "account": user.account,
+            "email": user.email,
+            "createTime": user.create_time.strftime("%Y-%m-%d %H:%M:%S") if user.create_time else None,
+            "id": user.id
+        })
+    
     return BaseResponse(
         code=SUCCESS_CODE,
         data={
-            "total": 100,
-            "list": mock_list
+            "total": db.query(DepartmentUserModel).count(),
+            "list": user_list
         }
     )
 
 
 @router.post("/user/save", response_model=BaseResponse)
-async def save_user(data: SaveUserRequest):
+async def save_user(data: dict, db: Session = Depends(get_db)):
     """保存用户"""
+    user_id = data.get("id")
+    
+    if user_id:
+        user = db.query(DepartmentUserModel).filter(DepartmentUserModel.id == user_id).first()
+        if user:
+            if data.get("username"):
+                user.username = data["username"]
+            if data.get("account"):
+                user.account = data["account"]
+            if data.get("email"):
+                user.email = data["email"]
+    else:
+        user = DepartmentUserModel(
+            department_id=data.get("department_id", ""),
+            username=data.get("username", ""),
+            account=data.get("account", ""),
+            email=data.get("email", "")
+        )
+        db.add(user)
+    
+    db.commit()
     return BaseResponse(
         code=SUCCESS_CODE,
         data="success"
@@ -144,13 +127,17 @@ async def save_user(data: SaveUserRequest):
 
 
 @router.post("/user/delete", response_model=BaseResponse)
-async def delete_user(data: DeleteRequest):
+async def delete_user(data: DeleteRequest, db: Session = Depends(get_db)):
     """删除用户"""
     if not data.ids:
         return BaseResponse(
             code=500,
             message="请选择需要删除的数据"
         )
+    
+    db.query(DepartmentUserModel).filter(DepartmentUserModel.id.in_(data.ids)).delete()
+    db.commit()
+    
     return BaseResponse(
         code=SUCCESS_CODE,
         data="success"
@@ -158,8 +145,30 @@ async def delete_user(data: DeleteRequest):
 
 
 @router.post("/save", response_model=BaseResponse)
-async def save_department(data: SaveDepartmentRequest):
+async def save_department(data: dict, db: Session = Depends(get_db)):
     """保存部门"""
+    dept_id = data.get("id")
+    
+    if dept_id:
+        dept = db.query(DepartmentModel).filter(DepartmentModel.id == dept_id).first()
+        if dept:
+            if data.get("departmentName"):
+                dept.department_name = data["departmentName"]
+            if data.get("status") is not None:
+                dept.status = data["status"]
+            if data.get("remark"):
+                dept.remark = data["remark"]
+    else:
+        dept = DepartmentModel(
+            id=to_any_string(),
+            department_name=data.get("departmentName", ""),
+            parent_id=data.get("parentId"),
+            status=data.get("status", 1),
+            remark=data.get("remark", "")
+        )
+        db.add(dept)
+    
+    db.commit()
     return BaseResponse(
         code=SUCCESS_CODE,
         data="success"
@@ -167,13 +176,17 @@ async def save_department(data: SaveDepartmentRequest):
 
 
 @router.post("/delete", response_model=BaseResponse)
-async def delete_department(data: DeleteRequest):
+async def delete_department(data: DeleteRequest, db: Session = Depends(get_db)):
     """删除部门"""
     if not data.ids:
         return BaseResponse(
             code=500,
             message="请选择需要删除的数据"
         )
+    
+    db.query(DepartmentModel).filter(DepartmentModel.id.in_(data.ids)).delete()
+    db.commit()
+    
     return BaseResponse(
         code=SUCCESS_CODE,
         data="success"
